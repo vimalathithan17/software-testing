@@ -24,9 +24,12 @@ Welcome! This repository is a complete, hands-on tutorial designed to teach you 
   - [Environment Setup](#environment-setup)
   - [Core Selenium Concepts: The WebDriver](#core-selenium-concepts-the-webdriver)
   - [Core Selenium Concepts: Finding Elements](#core-selenium-concepts-finding-elements)
+  - [How to Use Locators in Selenium](#how-to-use-locators-in-selenium)
   - [**Ultimate Guide to XPath**](#ultimate-guide-to-xpath)
   - [**Ultimate Guide to Selenium Methods**](#ultimate-guide-to-selenium-methods)
 - [**Part 4: The Hands-On Tutorial: From Script to Framework**](#part-4-the-hands-on-tutorial-from-script-to-framework)
+  - [How to Run The Tests](#how-to-run-the-tests)
+  - [How Pytest Works: A Quick Dive](#how-pytest-works-a-quick-dive)
   - [The AAA (Arrange, Act, Assert) Pattern Explained](#the-aaa-arrange-act-assert-pattern-explained)
   - [**Level 1: A Simple Script (`basic/`)**](#level-1-a-simple-script-basic)
   - [**Level 2: Introducing a Test Runner - `pytest`**](#level-2-introducing-a-test-runner---pytest)
@@ -219,6 +222,29 @@ To interact with something on a page (like a button or input field), you first h
 | `By.CLASS_NAME` | Finds elements by their `class` attribute. Be careful if multiple elements share the same class. | `driver.find_element(By.CLASS_NAME, 'completed')` |
 | `By.TAG_NAME` | Finds elements by their HTML tag (e.g., `li`, `button`). | `driver.find_elements(By.TAG_NAME, 'li')` |
 
+### How to Use Locators in Selenium
+The syntax is always `driver.find_element(By.STRATEGY, 'value')`. The `By` class is an essential part of telling Selenium *how* to search for the element.
+
+```python
+from selenium.webdriver.common.by import By
+
+# Find the task input field by its unique ID
+task_input_by_id = driver.find_element(By.ID, 'taskInput')
+
+# Find the same input field using a CSS selector
+task_input_by_css = driver.find_element(By.CSS_SELECTOR, '#taskInput')
+
+# Find the same input field using its XPath
+task_input_by_xpath = driver.find_element(By.XPATH, "//input[@id='taskInput']")
+
+# Find the "Add Task" button by its class name
+# Note: This is risky if multiple buttons share the class.
+add_button_by_class = driver.find_element(By.CLASS_NAME, 'btn')
+
+# Find the first list item on the page by its HTML tag
+first_list_item = driver.find_element(By.TAG_NAME, 'li')
+```
+
 ---
 
 ### Ultimate Guide to XPath
@@ -258,7 +284,7 @@ This is the most common use case.
 | `contains()` | Checks if an attribute or text *partially* contains a value. This is great for dynamic content. | `//button[contains(@class, 'delete')]` (finds a button whose class includes 'delete'). <br> `//li[contains(., 'Buy milk')]` (`.` refers to all text within the element, making this very robust). |
 | `starts-with()` | Checks if an attribute starts with a certain string. Useful for dynamic IDs. | `//div[starts-with(@id, 'user-')]` (finds divs with IDs like `user-1`, `user-2`, etc.). |
 | `text()` | Finds an element by its **exact** text content. **Warning:** This is brittle. It fails if there's extra whitespace or child elements. | `//button[text()='Add Task']` |
-| `normalize-space()` | Trims all leading/trailing whitespace and collapses multiple spaces into one before comparing. The best way to find by text. | `//button[normalize-space()='Add Task']` |
+| `normalize-space()` | Trims all leading/trailing whitespace and collapses multiple spaces into one before comparing. The best way to find by text. | `//button[normalize-space()='  Add Task  ']` (This will match the button, whereas `text()` would fail). |
 
 #### Navigating Relationships with XPath Axes
 Axes let you navigate from a known element to a nearby one. This is the key to creating stable locators when the element you want has no unique attributes.
@@ -347,6 +373,95 @@ These methods let you get information from an element to verify the state of the
 ---
 
 ## Part 4: The Hands-On Tutorial: From Script to Framework
+
+### How to Run The Tests
+To run the automated tests, you'll use the `pytest` command in your terminal. It's crucial to run the command from the correct directory so that `pytest` can discover the tests and import the necessary modules.
+
+-   **For `basic` and `basic_pom` tests:**
+    -   To run setupTest.py,interactTest.py,assertTest.py:
+    -   Navigate to basic and run the tests
+        ```bash
+        cd basic
+        python setupTest.py
+        python interactTest.py
+        python assertTest.py
+        ```
+    -   To run pytest files, based on which test you want to run, navigate to the appropriate directory containing the test file
+        ```bash
+        #To basic
+        cd basic
+
+        #Or to basic_pom
+        cd basic_pom
+        ```
+    -   Now run
+        ```bash
+        pytest
+        ```
+    -   pytest automatically finds the test file and functions
+    -   Navigate to the root of the project.
+    -   To run pytest against a specific file:
+        ```bash
+        # Run tests in the basic script
+        pytest basic/test_todo_app.py
+
+        # Run tests in the POM version
+        pytest basic_pom/test_todo_app.py
+        ```
+
+-   **For `fullstack` E2E tests:**
+    -   First, make sure the Flask server is running. Open a **separate terminal**, navigate to the `fullstack` directory, and run:
+        ```bash
+        cd fullstack/
+        python app.py
+        ```
+        You should see output indicating the server is running (e.g., `* Running on http://127.0.0.1:5000`).
+    -   In your **primary terminal**, navigate to the `fullstack` directory and run pytest. `pytest` will automatically discover the `test_e2e_todo_app.py` file.
+        ```bash
+        cd fullstack/
+        pytest
+        ```
+
+#### Pytest Command-Line Options
+You can modify `pytest`'s behavior with flags:
+
+| Flag | Description | Example |
+|---|---|---|
+| `-v` | **Verbose mode.** Shows each test function name and `PASSED` or `FAILED` instead of just dots. Highly recommended. | `pytest -v` |
+| `-k <expr>` | **Keyword expression.** Runs only tests whose names match the given string expression. | `pytest -k "add_task"` (runs `test_add_task_positive` and `test_add_task_end_to_end`) |
+| `--html=report.html` | **Generate HTML report.** Creates a self-contained HTML file with detailed test results. (Requires `pytest-html` plugin: `pip install pytest-html`). | `pytest --html=report.html` |
+| `-n <num>` | **Parallel execution.** Runs tests in parallel across multiple CPUs. (Requires `pytest-xdist` plugin: `pip install pytest-xdist`). | `pytest -n 4` (runs tests across 4 workers) |
+
+### How Pytest Works: A Quick Dive
+`pytest` is not magic; it follows a set of conventions to make testing simple yet powerful. Understanding these will help you write better tests.
+
+#### Test Discovery
+How does `pytest` know what to run? It scans the directory for files and functions that follow its naming convention:
+-   **Files:** Looks for files named `test_*.py` or `*_test.py`.
+-   **Functions:** Inside those files, it will execute functions prefixed with `test_`.
+-   **Classes:** It can also run methods inside classes prefixed with `Test`, but we are using the simpler functional approach in this tutorial.
+
+#### Fixtures and Dependency Injection
+A **fixture** is a function that provides a fixed baseline state or a reusable object for your tests. Our `driver` function is a perfect example.
+-   You mark a function as a fixture with the `@pytest.fixture` decorator.
+-   **Dependency Injection:** When you include the name of a fixture (`driver`) as an argument to your test function (`def test_add_task(driver):`), `pytest` automatically runs the fixture first and "injects" its result into your test. This is a clean, powerful way to provide resources like a database connection or a WebDriver instance to your tests without boilerplate code.
+
+#### The Power of `yield` in Fixtures (Setup & Teardown)
+A fixture can be used for both setup and teardown. The `yield` keyword is the dividing line.
+-   **Setup:** All code *before* the `yield` statement is the setup code. It runs before the test starts. In our case, `driver = webdriver.Firefox()` is the setup.
+-   **Execution:** The `yield` statement passes control to the test function, which then runs to completion. It passes the value that was yielded (our `driver` object).
+-   **Teardown:** All code *after* the `yield` statement is the teardown code. It runs after the test has finished, regardless of whether it passed or failed. `driver.quit()` is our teardown, ensuring the browser always closes.
+
+```python
+@pytest.fixture
+def driver():
+    # --- 1. SETUP CODE (runs before each test) ---
+    driver = webdriver.Firefox()
+    yield driver # --- 2. PASS THE DRIVER TO THE TEST AND WAIT FOR IT TO FINISH ---
+    # --- 3. TEARDOWN CODE (runs after each test) ---
+    driver.quit()
+```
+This structure makes tests extremely clean and ensures resources are managed correctly and automatically.
 
 ### The AAA (Arrange, Act, Assert) Pattern Explained
 This is a simple and powerful way to structure your tests for maximum clarity. Every test should have these three distinct parts.
