@@ -8,6 +8,7 @@ flask = "*"
 selenium = "*"
 mysql-connector-python = "*"
 pytest = "*"
+werkzeug = "*"
 
 [dev-packages]
 

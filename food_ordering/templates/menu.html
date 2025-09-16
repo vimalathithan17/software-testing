@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Menu - Food</title>
+  </head>
+  <body>
+    <h1>Menu</h1>
+    {% if user %}
+    <p>Welcome, {{ user }}</p>
+    {% else %}
+    <p><a href="/login">Login</a> to order</p>
+    {% endif %}
+    <ul>
+      {% for item in menu %}
+      <li>
+        {{ item.name }} - ${{ item.price }}
+        <form method="post" action="/order" style="display:inline">
+          <input type="hidden" name="item_id" value="{{ item.id }}"/>
+          <input name="coupon" placeholder="Coupon (optional)"/>
+          <button type="submit">Order</button>
+        </form>
+      </li>
+      {% endfor %}
+    </ul>
+  </body>
+</html>

@@ -1,2 +1,53 @@
+# Python caches
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+.env
+
+# pipenv virtualenv (pipenv stores venv outside repo by default but ignore common names)
+pipenv/
+
+# Testing / coverage
+.pytest_cache/
+.mypy_cache/
+.cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# SQLite databases
+*.db
+*.sqlite
+*.sqlite3
+
+# JMeter results and reports
+*.jtl
+**/*_report/
+jmeter_run.log
+
+# Logs
+*.log
+nohup.out
+
+# Editor/IDE
+.vscode/
+.idea/
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build outputs
+dist/
+build/
+
+# node
+node_modules/
 __pycache__/
 .pytest_cache/
