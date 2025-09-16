@@ -267,6 +267,44 @@ pipenv run python fullstack_sqlite/app.py
 ./fullstack_sqlite/run_jmeter_fullstack_sqlite.sh --threads 1 --ramp 1 --loops 1
 ```
 
+Installing the SQLite JDBC driver for JMeter (for DB-level tests)
+----------------------------------------------------------------
+
+The `fullstack_sqlite` folder includes a JDBC-based JMeter test (`fullstack_sqlite_jdbc_test.jmx`) and a convenience JDBC runner. To allow JMeter's JDBC samplers to talk directly to the SQLite DB you must make the `sqlite-jdbc` driver available to the JMeter process.
+
+1. Download the driver into `fullstack_sqlite/libs/`:
+
+   ```bash
+   ./fullstack_sqlite/download_sqlite_jdbc.sh
+   ```
+
+2. If you run the bundled JMeter included at the repo root (`apache-jmeter-5.6.3`), the JDBC runner will attempt to copy the jar into the bundled JMeter `lib/` directory automatically. If it doesn't, copy manually:
+
+   ```bash
+   cp fullstack_sqlite/libs/sqlite-jdbc-3.36.0.3.jar apache-jmeter-5.6.3/lib/
+   ```
+
+3. If you use a system-installed JMeter (`jmeter` on PATH), copy the jar into *that* JMeter's `lib/` directory (find its path with `which jmeter` and copy to the sibling `lib/` folder):
+
+   ```bash
+   which jmeter
+   cp fullstack_sqlite/libs/sqlite-jdbc-3.36.0.3.jar /path/to/jmeter/lib/
+   ```
+
+Note: copying the jar into the JMeter `lib/` directory is required so JMeter can load the `org.sqlite.JDBC` driver class used by the JDBC samplers.
+
+JDBC runner notes
+-----------------
+
+- The JDBC runner script `fullstack_sqlite/run_jmeter_fullstack_sqlite_jdbc.sh` accepts short flags `-t/--threads`, `-r/--ramp`, `-l/--loops` (same purpose as the other runners).
+- The JDBC runner will attempt to auto-initialize the SQLite DB from `fullstack_sqlite/schema.sql` if the DB file (`fullstack_sqlite.db`) is missing or empty — this requires the `sqlite3` CLI to be available. If `sqlite3` isn't present you'll need to create the DB yourself before running the JDBC plan.
+
+Example (run JDBC test with 5 threads, 5s ramp, 2 loops):
+
+```bash
+./fullstack_sqlite/run_jmeter_fullstack_sqlite_jdbc.sh -t 5 -r 5 -l 2
+```
+
 Windows (PowerShell):
 ```powershell
 # start the app and run JMeter using the included PS helper
