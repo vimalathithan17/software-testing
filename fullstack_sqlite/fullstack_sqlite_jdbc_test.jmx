@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.5">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Fullstack SQLite JDBC Test Plan" enabled="true">
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments">
+        <collectionProp name="Arguments.arguments"/>
+      </elementProp>
+    </TestPlan>
+    <hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="DB Users" enabled="true">
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">${__P(loops,1)}</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">${__P(threads,1)}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">${__P(ramp,1)}</stringProp>
+      </ThreadGroup>
+      <hashTree>
+        <!-- JDBC Connection Configuration -->
+        <JDBCDataSource guiclass="TestBeanGUI" testclass="JDBCDataSource" testname="JDBC Connection Configuration" enabled="true">
+          <boolProp name="autocommit">true</boolProp>
+          <stringProp name="checkQuery"></stringProp>
+          <stringProp name="connectionAge">5000</stringProp>
+          <stringProp name="dataSource">sqlitePool</stringProp>
+          <stringProp name="dbUrl">jdbc:sqlite:${__BeanShell(new File("fullstack_sqlite.db").getAbsolutePath())}</stringProp>
+          <stringProp name="driver">org.sqlite.JDBC</stringProp>
+          <boolProp name="keepAlive">true</boolProp>
+          <stringProp name="password"></stringProp>
+          <stringProp name="poolMax">10</stringProp>
+          <stringProp name="timeout">10000</stringProp>
+          <stringProp name="transactionIsolation">DEFAULT</stringProp>
+          <stringProp name="trimInterval">60000</stringProp>
+          <stringProp name="username"></stringProp>
+        </JDBCDataSource>
+        <hashTree/>
+
+        <!-- Select count -->
+        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="SELECT count" enabled="true">
+          <stringProp name="dataSource">sqlitePool</stringProp>
+          <stringProp name="query">SELECT COUNT(*) AS cnt FROM tasks</stringProp>
+          <stringProp name="queryType">Select Statement</stringProp>
+          <stringProp name="resultVariable">countResult</stringProp>
+        </JDBCSampler>
+        <hashTree/>
+
+        <!-- Insert a row -->
+        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="INSERT task" enabled="true">
+          <stringProp name="dataSource">sqlitePool</stringProp>
+          <stringProp name="query">INSERT INTO tasks (text, completed) VALUES ('jdbc task', 0)</stringProp>
+          <stringProp name="queryType">Update Statement</stringProp>
+          <stringProp name="resultVariable"></stringProp>
+        </JDBCSampler>
+        <hashTree/>
+
+        <!-- Delete the row we just added (cleanup) -->
+        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="DELETE task" enabled="true">
+          <stringProp name="dataSource">sqlitePool</stringProp>
+          <stringProp name="query">DELETE FROM tasks WHERE text = 'jdbc task'</stringProp>
+          <stringProp name="queryType">Update Statement</stringProp>
+          <stringProp name="resultVariable"></stringProp>
+        </JDBCSampler>
+        <hashTree/>
+      </hashTree>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>

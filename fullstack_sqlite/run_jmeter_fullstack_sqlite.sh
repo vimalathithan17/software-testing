@@ -62,6 +62,9 @@ fi
 
 JMETER_LOG="$SCRIPT_DIR/jmeter_run.log"
 
+# remove previous JTL so results for each run are fresh
+rm -f "$JTL"
+
 "$JMETER_CMD" -n -t "$PLAN" -l "$JTL" -j "$JMETER_LOG" -Jthreads="$THREADS" -Jramp="$RAMP" -Jloops="$LOOPS"
 JMETER_EXIT=$?
 if [ $JMETER_EXIT -ne 0 ]; then
