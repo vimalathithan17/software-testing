@@ -238,6 +238,54 @@ If you run the provided scripts and see many or 100% failures (JMeter summary sh
 - Flask app not running or listening on the expected port (bookstore default: 5001, food default: 5002). Start the app(s) first or adjust the port in `app.py` and the `.jmx`.
 - CSV Data Set Config file path is incorrect (JMeter can't read the CSV used for credentials), which may cause malformed requests. Use absolute paths in the CSV Data Set Config or run the script from the plan's folder.
 - Form fields in the JMeter POST samplers do not match the names expected by the Flask app (e.g., `username` vs `user`). Inspect the HTML forms in `templates/` and ensure the sampler parameters names match.
+
+## New: fullstack_sqlite demo (SQLite-backed)
+
+This repository now includes a small `fullstack_sqlite/` demo useful for DB-focused JMeter testing.
+
+Contents:
+- `fullstack_sqlite/app.py` — Flask to-do app (port 5004)
+- `fullstack_sqlite/schema.sql` — SQLite schema
+- `fullstack_sqlite/fullstack_sqlite_test_plan.jmx` — JMeter plan (uses CSV Data Set Config and property lookups)
+- `fullstack_sqlite/tasks.csv` — small CSV used by the plan to provide different POST payloads
+- `fullstack_sqlite/run_jmeter_fullstack_sqlite.sh` — non-GUI runner (Linux/macOS)
+- `fullstack_sqlite/run_all_tests_fullstack_sqlite.ps1` — PowerShell helper for Windows
+- `fullstack_sqlite/run_all_tests_fullstack_sqlite.bat` — CMD/BAT helper for Windows
+- `fullstack_sqlite/download_sqlite_jdbc.sh` — downloads sqlite-jdbc 3.36.0.3 to `fullstack_sqlite/libs/`
+
+How the plan uses CSV:
+- The JMX includes a CSV Data Set Config pointing at `tasks.csv` (variable `text`). The POST sampler for `/api/tasks` uses `${text}` as the payload so each sample can post different text values.
+
+Running the SQLite demo (quick):
+
+Linux/macOS:
+```bash
+# start the app
+pipenv run python fullstack_sqlite/app.py
+
+# in another terminal run a quick test (1 thread)
+./fullstack_sqlite/run_jmeter_fullstack_sqlite.sh --threads 1 --ramp 1 --loops 1
+```
+
+Windows (PowerShell):
+```powershell
+# start the app and run JMeter using the included PS helper
+.\run_all_tests_fullstack_sqlite.ps1 -Threads 1 -Ramp 1 -Loops 1
+```
+
+Windows (CMD):
+```cmd
+run_all_tests_fullstack_sqlite.bat
+```
+
+Integration with top-level orchestrator:
+- The repo root `run_all_tests.sh` has been updated to also start and run `fullstack_sqlite` along with the `bookstore` and `food_ordering` demos. Use the same global flags to control thread/ramp/loops for all tests:
+
+```bash
+./run_all_tests.sh --threads 1 --ramp 1 --loops 1
+```
+
+This will start three apps (bookstore on 5001, food on 5002, fullstack_sqlite on 5004), run each JMeter plan and generate reports under each folder.
 - Firewall or network restrictions blocking connections between JMeter and the app.
 
 How to debug quickly:
