@@ -7,6 +7,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BOOKSTORE_DIR="$ROOT/bookstore"
 FOOD_DIR="$ROOT/food_ordering"
+FULLSTACK_SQLITE_DIR="$ROOT/fullstack_sqlite"
 
 print_help() {
 	cat <<EOF
@@ -82,6 +83,13 @@ FOOD_PID=$!
 echo "Food pid: $FOOD_PID"
 popd >/dev/null
 
+echo "Starting fullstack_sqlite app (background)..."
+pushd "$FULLSTACK_SQLITE_DIR" >/dev/null
+nohup $PYTHON_CMD app.py > fullstack_sqlite_app.log 2>&1 &
+FULLSTACK_SQLITE_PID=$!
+echo "Fullstack SQLite pid: $FULLSTACK_SQLITE_PID"
+popd >/dev/null
+
 sleep 2
 
 echo "Running JMeter tests..."
@@ -99,9 +107,17 @@ FOOD_LOOPS=${LOOPS:-1}
 ./run_jmeter_food.sh --threads "$FOOD_THREADS" --ramp "$FOOD_RAMP" --loops "$FOOD_LOOPS"
 popd >/dev/null
 
+pushd "$FULLSTACK_SQLITE_DIR" >/dev/null
+FS_THREADS=${THREADS:-10}
+FS_RAMP=${RAMP:-5}
+FS_LOOPS=${LOOPS:-1}
+./run_jmeter_fullstack_sqlite.sh --threads "$FS_THREADS" --ramp "$FS_RAMP" --loops "$FS_LOOPS"
+popd >/dev/null
+
 echo "Stopping apps..."
 kill $BOOK_PID || true
 kill $FOOD_PID || true
+kill $FULLSTACK_SQLITE_PID || true
 
 echo "All done. Reports:
  - $BOOKSTORE_DIR/bookstore_report/index.html
